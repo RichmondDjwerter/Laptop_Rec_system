@@ -1,7 +1,7 @@
 const form=document.querySelector('#prefs'), cards=document.querySelector('#cards'), message=document.querySelector('#message');
 const inputs=['budget','performance','battery','weight'];
 function showValues(){
-  const labels={budget:`${Number(document.querySelector('#budget').value).toLocaleString()} CHF`,performance:`${document.querySelector('#performance').value} / 100`,battery:`${document.querySelector('#battery').value} hours`,weight:`${Number(document.querySelector('#weight').value).toFixed(1)} kg max`};
+  const labels={budget:Number(document.querySelector('#budget').value).toLocaleString(),performance:`${document.querySelector('#performance').value} / 100`,battery:`${document.querySelector('#battery').value} hours`,weight:`${Number(document.querySelector('#weight').value).toFixed(1)} kg max`};
   for(const [id,value] of Object.entries(labels))document.querySelector(`#${id}Out`).textContent=value;
   for(const id of inputs){const el=document.querySelector(`#${id}`),pct=(el.value-el.min)/(el.max-el.min)*100;el.style.background=`linear-gradient(90deg,#55aeea ${pct}%,#e6edf1 ${pct}%)`}
 }
@@ -22,6 +22,9 @@ let lastResults=[];
 form.addEventListener('submit',async event=>{event.preventDefault();const data=new FormData(form),payload={budget:document.querySelector('#budget').value,performance:document.querySelector('#performance').value,battery:document.querySelector('#battery').value,weight:document.querySelector('#weight').value,priceWeight:data.get('priceWeight'),performanceWeight:data.get('performanceWeight'),batteryWeight:data.get('batteryWeight'),portabilityWeight:data.get('portabilityWeight'),os:document.querySelector('#os').value,compatibility:document.querySelector('#compatibility').value.trim()||'Any'};const button=form.querySelector('button');button.disabled=true;button.textContent='Finding your matches…';try{const response=await fetch('/recommend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}),body=await response.json();if(!response.ok)throw Error(body.error);lastResults=body.results;draw(lastResults)}catch(error){message.hidden=false;message.textContent=`Could not load recommendations: ${error.message}`}finally{button.disabled=false;button.innerHTML='<span>✦</span> Find recommendations <span class="arrow">→</span>'}});
 document.querySelector('#search').addEventListener('input',()=>draw(lastResults));document.querySelector('#sort').addEventListener('change',()=>draw(lastResults));
 fetch('/catalog-info').then(r=>r.json()).then(info=>{
-  if(!info.hasBattery){document.querySelector('#batteryPreference').hidden=true;document.querySelector('#batteryImportance').hidden=true;document.querySelector('#datasetNotice').hidden=false;document.querySelector('#datasetNotice').textContent='Battery life is not included in this source dataset, so it is removed from the preference controls and matching score.'}
+  const notes=[];
+  if(!info.hasBattery){document.querySelector('#batteryPreference').hidden=true;document.querySelector('#batteryImportance').hidden=true;notes.push('Battery life is not included in this source dataset, so it is removed from the preference controls and matching score.')}
+  if(info.warnings?.length)notes.push(`${info.warnings.length} malformed catalog row(s) were skipped. See the Terminal for row details.`);
+  if(notes.length){document.querySelector('#datasetNotice').hidden=false;document.querySelector('#datasetNotice').textContent=notes.join(' ')}
   form.dispatchEvent(new Event('submit',{cancelable:true}));
 }).catch(()=>{form.dispatchEvent(new Event('submit',{cancelable:true}))});

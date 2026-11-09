@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import io
 import json
 import mimetypes
 import sys
@@ -12,6 +13,7 @@ from pathlib import Path
 
 
 DATA_FILE = Path(__file__).with_name("laptops.csv")
+LOAD_WARNINGS: list[str] = []
 
 
 @dataclass(frozen=True)
@@ -90,55 +92,60 @@ def rank_laptops(laptops: list[Laptop], prefs: Preferences) -> list[dict]:
 
 
 def load_laptops(path: Path = DATA_FILE) -> list[Laptop]:
-    with path.open(newline="", encoding="utf-8") as file:
-        reader = csv.DictReader(file)
-        if not reader.fieldnames:
-            raise ValueError("The laptop CSV is empty or has no header row.")
-        aliases = {
-            "name": ("name", "model", "model name", "product", "laptop", "brand model"),
-            "price": ("price_chf", "price", "price chf", "price (chf)", "price_euros", "price euros", "price (euros)", "price ($)"),
-            "performance": ("performance", "performance score", "performance (0-100)", "benchmark score"),
-            "battery": ("battery_hours", "battery life", "battery life hours", "battery life (hours)", "average battery life"),
-            "weight": ("weight_kg", "weight", "weight kg", "weight (kg)", "laptop weight"),
-            "os": ("operating_system", "operating system", "os", "opsys"),
-            "compatibility": ("compatibility", "special features", "features"),
-        }
-        headers = {header.strip().casefold(): header for header in reader.fieldnames if header}
-        columns = {}
-        for key, names in aliases.items():
-            columns[key] = next((headers[name.casefold()] for name in names if name.casefold() in headers), None)
-        required = [key for key in ("name", "price", "weight", "os") if not columns[key]]
-        if required:
-            pretty = {"name": "model/name", "price": "price", "performance": "performance score (0–100)",
-                      "battery": "battery life in hours", "weight": "weight in kg", "os": "operating system"}
-            raise ValueError("CSV is missing required column(s): " + ", ".join(pretty[key] for key in required) + ".")
-        # A Kaggle-style catalog often has Euro prices and CPU/GPU text but no
-        # battery or benchmark fields. Make the assumptions explicit and omit
-        # unavailable battery data from each laptop's score.
-        currency_header = columns["price"].casefold()
-        euro_price = "euro" in currency_header or "price_euros" in currency_header
-        euro_to_chf = 0.9143  # ECB reference rate, 6 Nov 2026
-        cpu_col = headers.get("cpu") or headers.get("processor")
-        gpu_col = headers.get("gpu") or headers.get("graphics")
-        ram_col = headers.get("ram") or headers.get("memory (ram)")
-        laptops = []
-        for row_number, row in enumerate(reader, start=2):
-            try:
-                raw_price = _number(row[columns["price"]])
-                price_chf = raw_price * euro_to_chf if euro_price else raw_price
-                performance = _number(row[columns["performance"]]) if columns["performance"] else _estimate_performance(
-                    row.get(cpu_col, "") if cpu_col else "", row.get(gpu_col, "") if gpu_col else "", row.get(ram_col, "") if ram_col else "")
-                battery = _number(row[columns["battery"]]) if columns["battery"] and row.get(columns["battery"], "").strip() else None
-                laptops.append(Laptop(
-                    name=(row[columns["name"]].strip() if columns["name"] else row.get("Manufacturer", "") + " " + row.get("Product", "")).strip(), price_chf=price_chf,
-                    performance=performance, battery_hours=battery,
-                    weight_kg=float(str(row[columns["weight"]]).lower().replace("kg", "").strip()),
-                    operating_system=row[columns["os"]].strip(),
-                    compatibility=row[columns["compatibility"]].strip() if columns["compatibility"] else "",
-                ))
-            except (ValueError, TypeError, KeyError) as exc:
-                raise ValueError(f"Could not read laptop data on CSV row {row_number}: {exc}") from exc
-        return laptops
+    LOAD_WARNINGS.clear()
+    raw_csv = path.read_bytes()
+    try:
+        csv_text = raw_csv.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        # Many exported laptop catalogs contain Windows-1252 characters such
+        # as accented letters in product names or descriptions.
+        csv_text = raw_csv.decode("cp1252")
+    reader = csv.DictReader(io.StringIO(csv_text, newline=""))
+    if not reader.fieldnames:
+        raise ValueError("The laptop CSV is empty or has no header row.")
+    aliases = {
+        "name": ("name", "model", "model name", "product", "laptop", "brand model"),
+        "price": ("price_chf", "price", "price chf", "price (chf)", "price_euros", "price euros", "price (euros)", "price ($)"),
+        "performance": ("performance", "performance score", "performance (0-100)", "benchmark score"),
+        "battery": ("battery_hours", "battery life", "battery life hours", "battery life (hours)", "average battery life"),
+        "weight": ("weight_kg", "weight", "weight kg", "weight (kg)", "laptop weight"),
+        "os": ("operating_system", "operating system", "os", "opsys"),
+        "compatibility": ("compatibility", "special features", "features"),
+    }
+    headers = {header.strip().casefold(): header for header in reader.fieldnames if header}
+    columns = {}
+    for key, names in aliases.items():
+        columns[key] = next((headers[name.casefold()] for name in names if name.casefold() in headers), None)
+    required = [key for key in ("name", "price", "weight", "os") if not columns[key]]
+    if required:
+        pretty = {"name": "model/name", "price": "price", "weight": "weight in kg", "os": "operating system"}
+        raise ValueError("CSV is missing required column(s): " + ", ".join(pretty[key] for key in required) + ".")
+    currency_header = columns["price"].casefold()
+    euro_price = "euro" in currency_header or "price_euros" in currency_header
+    euro_to_chf = 0.9143  # ECB reference rate, 6 Nov 2026
+    cpu_col = headers.get("cpu") or headers.get("processor")
+    gpu_col = headers.get("gpu") or headers.get("graphics")
+    ram_col = headers.get("ram") or headers.get("memory (ram)")
+    laptops = []
+    for row_number, row in enumerate(reader, start=2):
+        try:
+            raw_price = _number(row[columns["price"]])
+            price_chf = raw_price * euro_to_chf if euro_price else raw_price
+            performance = _number(row[columns["performance"]]) if columns["performance"] else _estimate_performance(
+                row.get(cpu_col, "") if cpu_col else "", row.get(gpu_col, "") if gpu_col else "", row.get(ram_col, "") if ram_col else "")
+            battery = _number(row[columns["battery"]]) if columns["battery"] and row.get(columns["battery"], "").strip() else None
+            laptops.append(Laptop(
+                name=(row[columns["name"]].strip() if columns["name"] else row.get("Manufacturer", "") + " " + row.get("Product", "")).strip(), price_chf=price_chf,
+                performance=performance, battery_hours=battery,
+                weight_kg=float(str(row[columns["weight"]]).lower().replace("kgs", "").replace("kg", "").strip()),
+                operating_system=row[columns["os"]].strip(),
+                compatibility=row[columns["compatibility"]].strip() if columns["compatibility"] else "",
+            ))
+        except (ValueError, TypeError, KeyError) as exc:
+            warning = f"Skipped CSV row {row_number}: {exc}"
+            LOAD_WARNINGS.append(warning)
+            print(warning, file=sys.stderr)
+    return laptops
 
 
 def _number(value: str) -> float:
@@ -220,7 +227,7 @@ class AdvisorHandler(BaseHTTPRequestHandler):
         if self.path == "/catalog-info":
             try:
                 laptops = load_laptops()
-                self._json(200, {"count": len(laptops), "hasBattery": any(laptop.battery_hours is not None for laptop in laptops)})
+                self._json(200, {"count": len(laptops), "hasBattery": any(laptop.battery_hours is not None for laptop in laptops), "warnings": LOAD_WARNINGS})
             except (ValueError, OSError) as exc:
                 self._json(400, {"error": str(exc)})
             return
@@ -231,6 +238,7 @@ class AdvisorHandler(BaseHTTPRequestHandler):
         body = target.read_bytes()
         self.send_response(200)
         self.send_header("Content-Type", mimetypes.guess_type(str(target))[0] or "application/octet-stream")
+        self.send_header("Cache-Control", "no-store")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
