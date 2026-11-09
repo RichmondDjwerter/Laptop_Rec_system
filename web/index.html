@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fuzzy Laptop Advisor</title><link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/"><span class="brand-icon">▱</span><span><b>Fuzzy</b> Laptop Advisor</span></a>
+    <div class="search-wrap"><span>⌕</span><input id="search" placeholder="Find your ideal laptop…" aria-label="Search recommendations"></div>
+    <nav><a class="active" href="#home">Home</a><a href="#how">How it works</a><a href="#about">About</a></nav>
+  </header>
+  <main id="home" class="layout">
+    <aside class="preferences panel">
+      <div class="section-title"><div><p class="eyebrow">MAKE IT YOURS</p><h1>Your preferences</h1></div><span class="sparkle">✳</span></div>
+      <form id="prefs">
+        <label class="field"><span class="field-heading"><span>Budget</span><b><span id="budgetOut">1,500</span> CHF</b></span><input id="budget" type="range" min="500" max="3000" step="50" value="1500"></label>
+        <label class="field"><span class="field-heading"><span>Performance</span><b id="performanceOut">65 / 100</b></span><input id="performance" type="range" min="20" max="100" value="65"></label>
+        <label class="field" id="batteryPreference"><span class="field-heading"><span>Battery life</span><b id="batteryOut">8 hours</b></span><input id="battery" type="range" min="3" max="20" value="8"></label>
+        <label class="field"><span class="field-heading"><span>Portability</span><b id="weightOut">1.8 kg max</b></span><input id="weight" type="range" min="0.8" max="3" step="0.1" value="1.8"></label>
+        <div class="field"><span class="field-heading"><span>What matters most?</span><small>Importance</small></span>
+          <div class="weight-grid">
+            <label>Price <select name="priceWeight"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option></select></label>
+            <label>Performance <select name="performanceWeight"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option></select></label>
+            <label id="batteryImportance">Battery <select name="batteryWeight"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
+            <label>Portability <select name="portabilityWeight"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
+          </div>
+        </div>
+        <div class="field filters"><label>Operating system<select id="os"><option>Any</option><option>Windows</option><option>macOS</option><option>Linux</option></select></label>
+          <label>Must have<input id="compatibility" placeholder="e.g. USB-C"></label></div>
+        <button class="find-button" type="submit"><span>✦</span> Find recommendations <span class="arrow">→</span></button>
+      </form>
+      <p id="datasetNotice" class="aside-note" hidden></p>
+      <p class="aside-note">Your must-haves filter the catalog. Fuzzy matching ranks what remains. Missing catalog values are left out of that laptop’s score.</p>
+    </aside>
+    <section class="results-area">
+      <div class="results-heading"><div><p class="eyebrow">A BETTER FIT, FOUND</p><h2>Recommended laptops</h2><p id="resultCount" class="muted">Adjust your preferences to explore your matches.</p></div>
+        <label class="sort">Sort by <select id="sort"><option value="match">Best match</option><option value="price">Lowest price</option><option value="battery">Longest battery</option><option value="weight">Lightest</option></select></label></div>
+      <div id="message" class="message" hidden></div>
+      <div id="cards" class="cards"></div>
+    </section>
+  </main>
+  <section id="how" class="info panel"><div><p class="eyebrow">THE IDEA</p><h2>How the fuzzy matching works</h2></div><p>Hard requirements such as budget and operating system remove unsuitable options. For the rest, fuzzy sets translate words like “affordable,” “powerful,” and “lightweight” into suitability scores. Your importance choices determine how those scores are combined.</p><a href="#about">About this prototype ↓</a></section>
+  <footer id="about"><span>FUZZY LAPTOP ADVISOR</span><span>Illustrative catalog · Scores explain fit to your preferences, not product quality.</span></footer>
+  <script src="/app.js"></script>
+</body>
+</html>
