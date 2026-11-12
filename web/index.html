@@ -14,15 +14,25 @@
     <aside class="preferences panel">
       <div class="section-title"><div><p class="eyebrow">MAKE IT YOURS</p><h1>Your preferences</h1></div><span class="sparkle">✳</span></div>
       <form id="prefs">
-        <label class="field"><span class="field-heading"><span>Budget</span><b><span id="budgetOut">1,500</span> CHF</b></span><input id="budget" type="range" min="500" max="3000" step="50" value="1500"></label>
+        <div class="mode-tabs" role="tablist" aria-label="Preference input mode">
+          <button type="button" class="mode-tab active" data-mode="sliders" role="tab" aria-selected="true">Sliders</button>
+          <button type="button" class="mode-tab" data-mode="text" role="tab" aria-selected="false">Describe it</button>
+        </div>
+        <section id="sliderMode" class="mode-panel" role="tabpanel">
+        <label class="field"><span class="field-heading"><span>Budget</span><b><span id="budgetOut">1,500</span> CHF</b></span><input id="budget" type="range" min="500" max="10000" step="100" value="1500"></label>
         <label class="field"><span class="field-heading"><span>Performance</span><b id="performanceOut">65 / 100</b></span><input id="performance" type="range" min="20" max="100" value="65"></label>
-        <label class="field" id="batteryPreference"><span class="field-heading"><span>Battery life</span><b id="batteryOut">8 hours</b></span><input id="battery" type="range" min="3" max="20" value="8"></label>
         <label class="field"><span class="field-heading"><span>Portability</span><b id="weightOut">1.8 kg max</b></span><input id="weight" type="range" min="0.8" max="3" step="0.1" value="1.8"></label>
-        <div class="field"><span class="field-heading"><span>What matters most?</span><small>Importance</small></span>
+        </section>
+        <section id="textMode" class="mode-panel" role="tabpanel" hidden>
+          <label class="field text-prompt"><span class="field-heading"><span>What are you looking for?</span></span><textarea id="requestText" rows="5" placeholder="A relatively cheap, fast MacBook for everyday work…"></textarea></label>
+          <button id="interpretButton" class="interpret-button" type="button">Translate my request <span>↗</span></button>
+          <p class="helper-copy">Your words are translated into editable preference values. Nothing is sent to an external service.</p>
+          <div id="interpretSummary" class="interpret-summary" hidden></div>
+        </section>
+        <div class="field weight-field"><span class="field-heading"><span>What matters most?</span><small>Shared importance</small></span>
           <div class="weight-grid">
             <label>Price <select name="priceWeight"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option></select></label>
             <label>Performance <select name="performanceWeight"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option></select></label>
-            <label id="batteryImportance">Battery <select name="batteryWeight"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
             <label>Portability <select name="portabilityWeight"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
           </div>
         </div>
@@ -35,7 +45,7 @@
     </aside>
     <section class="results-area">
       <div class="results-heading"><div><p class="eyebrow">A BETTER FIT, FOUND</p><h2>Recommended laptops</h2><p id="resultCount" class="muted">Adjust your preferences to explore your matches.</p></div>
-        <label class="sort">Sort by <select id="sort"><option value="match">Best match</option><option value="price">Lowest price</option><option value="battery">Longest battery</option><option value="weight">Lightest</option></select></label></div>
+        <label class="sort">Sort by <select id="sort"><option value="match">Best match</option><option value="price">Lowest price</option><option value="weight">Lightest</option></select></label></div>
       <div id="message" class="message" hidden></div>
       <div id="cards" class="cards"></div>
     </section>

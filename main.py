@@ -6,6 +6,7 @@ import csv
 import io
 import json
 import mimetypes
+import re
 import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from dataclasses import dataclass
@@ -21,7 +22,6 @@ class Laptop:
     name: str
     price_chf: float
     performance: float  # benchmark-style score, 0–100
-    battery_hours: float | None
     weight_kg: float
     operating_system: str
     compatibility: str
@@ -31,7 +31,6 @@ class Laptop:
 class Preferences:
     budget_chf: float
     min_performance: float
-    min_battery_hours: float
     max_weight_kg: float
     weights: dict[str, float]
     operating_system: str = "Any"
@@ -58,8 +57,6 @@ def memberships(laptop: Laptop, prefs: Preferences) -> dict[str, float]:
         # Lower weight is better, so reverse the increasing ramp.
         "Portability": 1.0 - ramp(laptop.weight_kg, prefs.max_weight_kg * 0.7, prefs.max_weight_kg * 1.5),
     }
-    if laptop.battery_hours is not None:
-        scores["Battery life"] = ramp(laptop.battery_hours, prefs.min_battery_hours * 0.6, prefs.min_battery_hours * 1.4)
     return scores
 
 
@@ -107,7 +104,6 @@ def load_laptops(path: Path = DATA_FILE) -> list[Laptop]:
         "name": ("name", "model", "model name", "product", "laptop", "brand model"),
         "price": ("price_chf", "price", "price chf", "price (chf)", "price_euros", "price euros", "price (euros)", "price ($)"),
         "performance": ("performance", "performance score", "performance (0-100)", "benchmark score"),
-        "battery": ("battery_hours", "battery life", "battery life hours", "battery life (hours)", "average battery life"),
         "weight": ("weight_kg", "weight", "weight kg", "weight (kg)", "laptop weight"),
         "os": ("operating_system", "operating system", "os", "opsys"),
         "compatibility": ("compatibility", "special features", "features"),
@@ -133,10 +129,9 @@ def load_laptops(path: Path = DATA_FILE) -> list[Laptop]:
             price_chf = raw_price * euro_to_chf if euro_price else raw_price
             performance = _number(row[columns["performance"]]) if columns["performance"] else _estimate_performance(
                 row.get(cpu_col, "") if cpu_col else "", row.get(gpu_col, "") if gpu_col else "", row.get(ram_col, "") if ram_col else "")
-            battery = _number(row[columns["battery"]]) if columns["battery"] and row.get(columns["battery"], "").strip() else None
             laptops.append(Laptop(
                 name=(row[columns["name"]].strip() if columns["name"] else row.get("Manufacturer", "") + " " + row.get("Product", "")).strip(), price_chf=price_chf,
-                performance=performance, battery_hours=battery,
+                performance=performance,
                 weight_kg=float(str(row[columns["weight"]]).lower().replace("kgs", "").replace("kg", "").strip()),
                 operating_system=row[columns["os"]].strip(),
                 compatibility=row[columns["compatibility"]].strip() if columns["compatibility"] else "",
@@ -176,6 +171,110 @@ def _estimate_performance(cpu: str, gpu: str, ram: str) -> float:
     return max(20.0, min(100.0, score))
 
 
+def interpret_request(text: str, defaults: dict | None = None) -> dict:
+    """Map plain language into editable, crisp preference values (no external NLP service)."""
+    lower = re.sub(r"\b(?:a|one)\s+grand\b", "1000", text.strip().casefold())
+    values = {
+        "budget": float((defaults or {}).get("budget", 1500)),
+        "performance": float((defaults or {}).get("performance", 65)),
+        "weight": float((defaults or {}).get("weight", 1.8)),
+        "os": (defaults or {}).get("os", "Any"),
+        "compatibility": (defaults or {}).get("compatibility", "Any"),
+    }
+    mapped = []
+
+    money = re.search(r"(?:chf\s*)?([0-9][0-9,.'’ ]*)\s*(?:chf|francs?)\b", lower)
+    budget_multiplier = 1
+    if not money:
+        money = re.search(r"\b(?:under|below|less than|up to|no more than|budget(?: of)?|around|about)\s+(?:chf\s*)?([0-9][0-9,.'’ ]*)(?:\s*(k|grand|thousand))?\b(?!\s*kg)", lower)
+        if money and money.group(2):
+            budget_multiplier = 1000
+    if money:
+        values["budget"] = _parse_user_number(money.group(1)) * budget_multiplier
+        mapped.append(f"budget → CHF {values['budget']:,.0f}")
+    elif re.search(r"\b(relatively|fairly|somewhat|reasonably|quite|pretty|moderately)\s+(?:cheap|affordable|inexpensive|priced)\b|\b(good value|good deal|value for money|reasonable price|not too pricey|not break the bank|mid[- ]range|mid[- ]priced)\b", lower):
+        values["budget"] = min(values["budget"], 1400)
+        mapped.append(f"relatively affordable → budget up to CHF {values['budget']:,.0f}")
+    elif re.search(r"\b(very cheap|really cheap|super cheap|dirt cheap|as cheap as possible|costs? as little as possible|cheapest)\b", lower):
+        values["budget"] = min(values["budget"], 700)
+        mapped.append(f"very cheap → budget up to CHF {values['budget']:,.0f}")
+    elif re.search(r"\b(cheap(?:-ish)?|cheaper|affordable|inexpensive|budget[- ]friendly|low[- ]cost|bargain|save money|on a budget|tight budget)\b|not too expensive|not expensive|don't want to spend a lot|do not want to spend a lot", lower):
+        values["budget"] = min(values["budget"], 1000)
+        mapped.append(f"affordable → budget up to CHF {values['budget']:,.0f}")
+    elif re.search(r"\b(price|budget|cost)\s+(?:is )?not a concern\b|\b(money is no object|money doesn't matter)\b", lower):
+        values["budget"] = max(values["budget"], 5000)
+        mapped.append(f"budget is flexible → up to CHF {values['budget']:,.0f}")
+    elif re.search(r"\b(premium|high[- ]end|top[- ]of[- ]the[- ]line)\b", lower):
+        values["budget"] = max(values["budget"], 2500)
+        mapped.append(f"premium → budget up to CHF {values['budget']:,.0f}")
+
+    explicit_perf = re.search(r"(?:performance|score)\s*(?:of|at least|above|over|:)?\s*(\d{1,3})\s*(?:/\s*100|%)?", lower)
+    if explicit_perf:
+        values["performance"] = max(20, min(100, float(explicit_perf.group(1))))
+        mapped.append(f"performance → {values['performance']:.0f}/100")
+    elif re.search(r"\b(relatively fast|fairly fast|reasonably fast|pretty fast|quite fast)\b", lower):
+        values["performance"] = 72
+        mapped.append("relatively fast → performance 72/100")
+    elif re.search(r"\b(very fast|super fast|extremely fast|blazing fast|lightning fast|doesn't lag|does not lag|no lag|doesn't feel slow|does not feel slow)\b", lower):
+        values["performance"] = 92
+        mapped.append("very fast/no lag → performance 92/100")
+    elif re.search(r"\b(gaming|video editing|3d rendering|3d design|cad|machine learning|heavy workloads?|powerful|fast|quick|snappy|responsive|smooth|quick to load|runs apps well|lots of tabs|many tabs|multitasking|workhorse)\b", lower):
+        values["performance"] = 85
+        mapped.append("fast/powerful or demanding work → performance 85/100")
+    elif re.search(r"\b(programming|coding|developer|software development)\b", lower):
+        values["performance"] = 70
+        mapped.append("programming/coding → performance 70/100")
+    elif re.search(r"\b(work from home|office work|video calls|streaming|watching movies|school|student|studying|everyday|normal use|web browsing|email|writing documents|documents and spreadsheets|basic|simple tasks?|light office)\b", lower):
+        values["performance"] = 55
+        mapped.append("everyday study/work → performance 55/100")
+
+    explicit_weight = re.search(r"(\d+(?:[.,]\d+)?)\s*kg\b", lower)
+    if explicit_weight:
+        values["weight"] = _parse_user_number(explicit_weight.group(1))
+        mapped.append(f"weight limit → {values['weight']:g} kg")
+    elif re.search(r"\b(ultralight|very light|as light as possible)\b", lower):
+        values["weight"] = 1.2
+        mapped.append("very light → maximum 1.2 kg")
+    elif re.search(r"\b(relatively light|fairly light|not too heavy)\b", lower):
+        values["weight"] = 1.6
+        mapped.append("relatively light → maximum 1.6 kg")
+    elif re.search(r"\b(lightweight|easy to carry|carry it around|travel[- ]friendly|portable|commut(?:e|ing)|backpack)\b", lower):
+        values["weight"] = 1.4
+        mapped.append("lightweight/travel-friendly → maximum 1.4 kg")
+    elif re.search(r"\b(desk|desktop replacement|stays at home|weight does not matter|heavy is fine)\b", lower):
+        values["weight"] = 2.8
+        mapped.append("weight is not a concern → maximum 2.8 kg")
+
+    for key, patterns, label in (
+        ("os", (r"\bmacos\b", r"\bmac os\b", r"\bmacbook\b", r"\bmac\b"), "macOS"),
+        ("os", (r"\bwindows\b",), "Windows"),
+        ("os", (r"\blinux\b", r"\bubuntu\b"), "Linux"),
+    ):
+        if any(re.search(pattern, lower) for pattern in patterns):
+            values["os"] = label
+            mapped.append(f"operating system → {label}")
+            break
+
+    compat = re.search(r"\b(usb-c|usb-a|thunderbolt|hdmi|cuda|touchscreen)\b", lower)
+    if compat:
+        values["compatibility"] = compat.group(1).upper() if compat.group(1).startswith("usb") else compat.group(1).title()
+        mapped.append(f"must-have feature → {values['compatibility']}")
+
+    return {"values": values, "mapped": mapped}
+
+
+def _parse_user_number(value: str) -> float:
+    cleaned = value.replace("'", "").replace("’", "").replace(" ", "")
+    if "," in cleaned and "." in cleaned:
+        decimal_mark = "," if cleaned.rfind(",") > cleaned.rfind(".") else "."
+        thousands_mark = "." if decimal_mark == "," else ","
+        cleaned = cleaned.replace(thousands_mark, "").replace(decimal_mark, ".")
+    elif "," in cleaned:
+        left, right = cleaned.rsplit(",", 1)
+        cleaned = left + right if len(right) == 3 else left + "." + right
+    return float(cleaned)
+
+
 def read_number(prompt: str, default: float) -> float:
     value = input(f"{prompt} [{default}]: ").strip()
     return float(value) if value else default
@@ -186,18 +285,16 @@ def cli_main() -> None:
     print("Tell us what matters. Scores are fuzzy suitability estimates, not product ratings.\n")
     budget = read_number("Maximum budget (CHF)", 1500)
     min_performance = read_number("Desired performance (0–100)", 65)
-    min_battery = read_number("Desired battery life (hours)", 8)
     max_weight = read_number("Preferred maximum weight (kg)", 1.8)
     print("\nSet importance from 1 (less important) to 5 (most important).")
     weights = {
         "Price": read_number("Price importance", 4),
         "Performance": read_number("Performance importance", 4),
-        "Battery life": read_number("Battery importance", 3),
         "Portability": read_number("Portability importance", 3),
     }
     os_choice = input("Required operating system (Windows/macOS/Linux/Any) [Any]: ").strip() or "Any"
     compat = input("Required compatibility keyword, or Any [Any]: ").strip() or "Any"
-    prefs = Preferences(budget, min_performance, min_battery, max_weight, weights, os_choice, compat)
+    prefs = Preferences(budget, min_performance, max_weight, weights, os_choice, compat)
 
     try:
         recommendations = rank_laptops(load_laptops(), prefs)
@@ -212,9 +309,8 @@ def cli_main() -> None:
     for rank, result in enumerate(recommendations[:5], 1):
         laptop = result["laptop"]
         print(f"\n{rank}. {laptop.name} — {result['score']:.0%} fuzzy match")
-        battery_text = f"{laptop.battery_hours:g} h battery" if laptop.battery_hours is not None else "battery life not in catalog"
         print(f"   CHF {laptop.price_chf:.0f} | {laptop.performance:.0f}/100 performance | "
-              f"{battery_text} | {laptop.weight_kg:.2f} kg | {laptop.operating_system}")
+              f"{laptop.weight_kg:.2f} kg | {laptop.operating_system}")
         print("   Suitability: " + " · ".join(f"{name} {value:.0%}" for name, value in result["memberships"].items()))
         print("   Score contribution: " + " · ".join(f"{name} +{value:.0%}" for name, value in result["contributions"].items()))
 
@@ -227,7 +323,7 @@ class AdvisorHandler(BaseHTTPRequestHandler):
         if self.path == "/catalog-info":
             try:
                 laptops = load_laptops()
-                self._json(200, {"count": len(laptops), "hasBattery": any(laptop.battery_hours is not None for laptop in laptops), "warnings": LOAD_WARNINGS})
+                self._json(200, {"count": len(laptops), "warnings": LOAD_WARNINGS})
             except (ValueError, OSError) as exc:
                 self._json(400, {"error": str(exc)})
             return
@@ -244,6 +340,14 @@ class AdvisorHandler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_POST(self):
+        if self.path == "/interpret":
+            try:
+                payload = json.loads(self.rfile.read(int(self.headers.get("Content-Length", "0"))))
+                result = interpret_request(str(payload.get("text", "")), payload.get("defaults", {}))
+                self._json(200, result)
+            except (ValueError, OSError, json.JSONDecodeError) as exc:
+                self._json(400, {"error": str(exc)})
+            return
         if self.path != "/recommend":
             self.send_error(404)
             return
@@ -251,14 +355,14 @@ class AdvisorHandler(BaseHTTPRequestHandler):
             payload = json.loads(self.rfile.read(int(self.headers.get("Content-Length", "0"))))
             prefs = Preferences(
                 budget_chf=float(payload["budget"]), min_performance=float(payload["performance"]),
-                min_battery_hours=float(payload["battery"]), max_weight_kg=float(payload["weight"]),
+                max_weight_kg=float(payload["weight"]),
                 weights={"Price": float(payload["priceWeight"]), "Performance": float(payload["performanceWeight"]),
-                         "Battery life": float(payload["batteryWeight"]), "Portability": float(payload["portabilityWeight"])},
+                         "Portability": float(payload["portabilityWeight"])},
                 operating_system=payload.get("os", "Any"), compatibility=payload.get("compatibility", "Any"),
             )
             results = rank_laptops(load_laptops(), prefs)
             answer = [{"name": result["laptop"].name, "price": result["laptop"].price_chf,
-                       "performance": result["laptop"].performance, "battery": result["laptop"].battery_hours,
+                       "performance": result["laptop"].performance,
                        "weight": result["laptop"].weight_kg, "os": result["laptop"].operating_system,
                        "score": result["score"], "memberships": result["memberships"],
                        "contributions": result["contributions"]} for result in results]
