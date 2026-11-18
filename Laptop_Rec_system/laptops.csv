@@ -1,0 +1,57 @@
+name,price_chf,performance,weight_kg,operating_system,compatibility,cpu_model,gpu_model,ram_gb,storage_gb,battery_wh,cpu_index,gpu_index,price_note
+Apple MacBook Air 2022 Laptop,890,59,1.24,macOS,,Apple M2,Apple integrated GPU (details vary),8,256,52.6,68,38,Approximate demo price
+Apple MacBook Air 15 2024 MRYR3HN/A Laptop,1190,67,1.51,macOS,,Apple M3,Apple integrated GPU (details vary),8,256,66.5,77,46,Approximate demo price
+Apple MacBook Air 2024 MXCT3HN/A Laptop,1380,70,1.24,macOS,,Apple M3,Apple integrated GPU (details vary),16,512,52.6,77,46,Approximate demo price
+Apple MacBook Pro 16 2023 Laptop,2050,80,2.14,macOS,,Apple M3 Pro,Apple integrated GPU (details vary),18,512,100.0,88,58,Approximate demo price
+Apple MacBook Air 2020 MGND3HN Laptop,710,51,1.29,macOS,,Apple M1,Apple integrated GPU (details vary),8,256,49.9,58,29,Approximate demo price
+Lenovo Thinkbook 15 21DJ00EXIH Laptop,480,47,1.7,Windows,,Intel Core i5-1235U,Intel Iris Xe integrated,8,512,45.0,53,25,Approximate demo price
+Asus Vivobook Pro 15 M6500QF-HN521WS Laptop,440,52,1.8,Windows,,AMD Ryzen 5 5600HS,NVIDIA GeForce RTX 2050,8,512,50.0,59,32,Approximate demo price
+Acer Aspire 7 A715-76G UN.QMYSI.002 Gaming Laptop,480,56,2.1,Windows,,Intel Core i5-12450H,NVIDIA GeForce RTX 2050,16,512,50.0,61,32,Approximate demo price
+MSI Thin GF63 11UCX-1492IN Gaming Laptop,510,54,1.86,Windows,,Intel Core i5-11260H,NVIDIA GeForce RTX 2050,16,256,52.4,57,32,Approximate demo price
+HP Victus 15-fb1016AX Gaming Laptop,560,56,2.37,Windows,,AMD Ryzen 5 7535HS,NVIDIA GeForce RTX 2050,8,512,52.5,65,32,Approximate demo price
+Asus Vivobook 16X 2023 K3605ZF-MB541WS Laptop,580,56,1.8,Windows,,Intel Core i5-12450H,NVIDIA GeForce RTX 2050,16,512,63.0,61,32,Approximate demo price
+Acer Nitro 5 AN515-58 NH.QFHSI.008 Gaming Laptop,590,56,2.5,Windows,,Intel Core i5-12450H,NVIDIA GeForce RTX 3050,8,512,57.5,61,43,Approximate demo price
+Dell G15-5520 Laptop,620,59,2.57,Windows,,Intel Core i5-12500H,NVIDIA GeForce RTX 3050,16,512,56.0,61,43,Approximate demo price
+HP Victus 16-s0089AX Gaming Laptop,720,70,2.48,Windows,,AMD Ryzen 7 7840HS,NVIDIA GeForce RTX 3050,16,1024,70.0,78,43,Approximate demo price
+LG Gram 17 2023 17Z90R-G.CH77A2 Laptop,1310,66,1.35,Windows,,Intel Core i7-1360P,NVIDIA GeForce RTX 3050,16,1024,90.0,72,43,Approximate demo price
+Gigabyte G5 MF-E2IN313SHLaptop,650,61,2.08,Windows,,Intel Core i5-12500H,NVIDIA GeForce RTX 4050,8,512,54.0,61,63,Approximate demo price
+HP Omen 16-wd0770TX Gaming Laptop,800,66,2.35,Windows,,Intel Core i5-13420H,NVIDIA GeForce RTX 4050,16,512,83.0,65,63,Approximate demo price
+Asus Vivobook Pro 15 OLED K6502VU-MA541WS Laptop,930,66,1.8,Windows,,Intel Core i5-13500H,NVIDIA GeForce RTX 4050,16,512,70.0,65,63,Approximate demo price
+Acer Predator Helios Neo 16 PHN16-71 Gaming Laptop,1000,75,2.6,Windows,,Intel Core i7-13700HX,NVIDIA GeForce RTX 4050,16,1024,90.0,80,63,Approximate demo price
+Xiaomi Redmi G Pro 2024 Gaming Laptop,910,88,2.7,Windows,,Intel Core i9-14900HX,NVIDIA GeForce RTX 4060,16,1024,80.0,95,76,Approximate demo price
+MSI Bravo 17 C7VFK-034IN Gaming Laptop,960,77,2.7,Windows,,AMD Ryzen 7 7735HS,NVIDIA GeForce RTX 4060,16,1024,53.5,78,76,Approximate demo price
+Lenovo Legion Slim 5 16APH8 82Y9008MIN Gaming Laptop,1160,77,2.4,Windows,,AMD Ryzen 7 7840HS,NVIDIA GeForce RTX 4060,16,512,80.0,78,76,Approximate demo price
+Razer Blade 14 2023 Gaming Laptop,1780,87,1.78,Windows,,AMD Ryzen 9 7940HS,NVIDIA GeForce RTX 4060,32,1024,68.1,88,76,Approximate demo price
+MSI Stealth 14 AI Studio A1VGG-054IN Gaming Laptop,2040,78,1.7,Windows,,Intel Core Ultra 7 155H,NVIDIA GeForce RTX 4060,32,1024,72.0,73,76,Approximate demo price
+Gigabyte Aorus 15 9SF Gaming Laptop,1330,69,2.39,Windows,,Intel Core i5-12500H,NVIDIA GeForce RTX 4070,16,1024,99.0,61,85,Approximate demo price
+Asus ROG Strix SCAR 16 2024 G634JZR-CM932WS Gaming Laptop,2580,96,2.65,Windows,,Intel Core i9-14900HX,NVIDIA GeForce RTX 4080,32,2048,90.0,95,94,Approximate demo price
+Lenovo Legion 9i 83AG0044IN Laptop,4000,94,2.56,Windows,,Intel Core i9-13980HX,NVIDIA GeForce RTX 4090,32,2048,99.9,91,99,Approximate demo price
+Gigabyte G5 KF-E3IN313SH Laptop,770,64,2.08,Windows,,Intel Core i5-12500H,NVIDIA GeForce RTX 4060,8,512,54.0,61,76,Approximate demo price
+Apple MacBook Air 15 2023 Laptop,1170,57.1,1.51,macOS,,Apple M2,Apple integrated GPU (details vary),8,512,66.5,68.0,29.0,Approximate demo price
+Apple MacBook Air 2024 MRYN3HN/A Laptop,1380,62.7,1.51,macOS,,Apple M3,Apple integrated GPU (details vary),8,512,66.5,77.0,29.0,Approximate demo price
+Apple MacBook Air 15 2024 Laptop,1550,65.7,1.51,macOS,,Apple M3,Apple integrated GPU (details vary),16,512,66.5,77.0,29.0,Approximate demo price
+Apple MacBook Air 2024 MRXW3HN/A Laptop,1200,62.7,1.24,macOS,,Apple M3,Apple integrated GPU (details vary),8,512,52.6,77.0,29.0,Approximate demo price
+Apple MacBook Air 2024 Laptop,1020,62.7,1.24,macOS,,Apple M3,Apple integrated GPU (details vary),8,256,52.6,77.0,29.0,Approximate demo price
+Lenovo LOQ 15IRH8 82XV00LTIN 2023 Gaming Laptop,660,56.4,2.4,Windows,,Intel Core i5-12450H,NVIDIA GeForce RTX 2050,16,512,60.0,61.0,32.0,Approximate demo price
+MSI Katana 15 B12UDXK-1006IN Gaming Laptop,650,56.0,2.25,Windows,,Intel Core i5-12450H,NVIDIA GeForce RTX 3050,8,512,53.5,61.0,43.0,Approximate demo price
+Dell G15-5520 2023 Laptop,690,59.0,2.57,Windows,,Intel Core i5-12500H,NVIDIA GeForce RTX 3050,16,1024,56.0,61.0,43.0,Approximate demo price
+MSI Katana 15 B12UDXK-1004IN Gaming Laptop,760,63.9,2.25,Windows,,Intel Core i7-12650H,NVIDIA GeForce RTX 3050,16,512,53.5,69,43.0,Approximate demo price
+Lenovo LOQ 15IRX9 83DV007HIN Gaming Laptop,910,75.3,2.4,Windows,,Intel Core i7-13650HX,NVIDIA GeForce RTX 4050,16,512,60.0,80,63.0,Approximate demo price
+Dell Alienware x14 R2 Gaming Laptop,1780,72.2,1.91,Windows,,Intel Core i7-13620H,NVIDIA GeForce RTX 4050,16,1024,80.5,75,63.0,Approximate demo price
+HP Omen 16-u0022TX Gaming Laptop,1490,75.3,2.09,Windows,,Intel Core i7-13700HX,NVIDIA GeForce RTX 4050,16,512,97.0,80.0,63.0,Approximate demo price
+Gigabyte G6 KF Gaming Laptop,1150,75.2,2.3,Windows,,Intel Core i7-13620H,NVIDIA GeForce RTX 4060,16,512,54.0,75,76.0,Approximate demo price
+Asus TUF Gaming F15 2023 FX507VV-LP071WS Gaming Laptop,1330,82.0,2.2,Windows,,Intel Core i9-13900H,NVIDIA GeForce RTX 4060,16,1024,90.0,86,76.0,Approximate demo price
+Dell Alienware m16 2023 Gaming Laptop,1770,79.6,3.23,Windows,,AMD Ryzen 7 7745HX,NVIDIA GeForce RTX 4060,16,1024,86.0,82,76.0,Approximate demo price
+Acer Predator Helios Neo 16 2023 PHN16-71 Gaming Laptop,1600,86.6,2.6,Windows,,Intel Core i9-13900HX,NVIDIA GeForce RTX 4070,16,1024,90.0,90,85.0,Approximate demo price
+HP Omen 16-u0023TX Gaming Laptop,2110,90.3,2.09,Windows,,Intel Core i9-13900HX,NVIDIA GeForce RTX 4070,32,1024,97.0,90,85.0,Approximate demo price
+Lenovo Legion Pro 7 2023 82WQ007TIN Gaming Laptop,2660,92.4,2.8,Windows,,Intel Core i9-13900HX,NVIDIA GeForce RTX 4080,32,1024,99.9,90,94.0,Approximate demo price
+Dell Alienware X16 R1 2023 Gaming Laptop,2860,92.4,2.72,Windows,,Intel Core i9-13900HX,NVIDIA GeForce RTX 4080,32,1024,86.0,90,94.0,Approximate demo price
+Dell Alienware M18 R1 Gaming Laptop,3250,90.6,3.86,Windows,,Intel Core i9-13900HK,NVIDIA GeForce RTX 4080,32,1024,97.0,87,94.0,Approximate demo price
+HP Victus 15-fb0122AX Gaming Laptop,470,50.0,2.37,Windows,,AMD Ryzen 5 5600H,NVIDIA GeForce GTX 1650,8,512,52.5,58,25,Approximate demo price
+HP Victus 16-e0352AX Gaming Laptop,420,50.0,2.48,Windows,,AMD Ryzen 5 5600H,NVIDIA GeForce GTX 1650,8,512,70.0,58,25,Approximate demo price
+Lenovo IdeaPad Gaming 3 82K101LJIN Laptop,470,49.9,2.25,Windows,,Intel Core i5-11320H,NVIDIA GeForce GTX 1650,16,512,45.0,53,25,Approximate demo price
+HP Victus 16-D0314TX Gaming Laptop,530,52.3,2.46,Windows,,Intel Core i5-11400H,NVIDIA GeForce GTX 1650,16,512,70.0,57,25,Approximate demo price
+Dell Inspiron 5620 ICC-C783531WIN8 Laptop,610,54.8,1.87,Windows,,Intel Core i5-1240P,NVIDIA GeForce MX570,16,512,54.0,58,33,Approximate demo price
+‎HP Zbook Power G4-A 2023 ZHAN 99 Laptop,1030,56.2,2.25,Windows,,AMD Ryzen 5 6600H,NVIDIA Quadro T600,16,512,52.5,61,31,Approximate demo price
+MSI GF63 Thin 11SC-1298IN Gaming Laptop,520,57.9,1.86,Windows,,Intel Core i7-11800H,NVIDIA GeForce GTX 1650,16,256,52.4,66,25,Approximate demo price
+Lenovo ThinkPad P14s 21AKS02800 Laptop,1190,58.8,1.38,Windows,,Intel Core i7-1260P,NVIDIA T550,16,512,52.5,66,29,Approximate demo price
