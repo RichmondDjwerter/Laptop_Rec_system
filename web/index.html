@@ -19,7 +19,7 @@
           <button type="button" class="mode-tab" data-mode="text" role="tab" aria-selected="false">Describe it</button>
         </div>
         <section id="sliderMode" class="mode-panel" role="tabpanel">
-        <label class="field"><span class="field-heading"><span>Budget</span><b><span id="budgetOut">1,500</span> CHF</b></span><input id="budget" type="range" min="500" max="10000" step="100" value="1500"></label>
+        <label class="field"><span class="field-heading"><span>Preferred budget</span><b><span id="budgetOut">1,500</span> CHF</b></span><input id="budget" type="range" min="500" max="10000" step="100" value="1500"></label>
         <label class="field"><span class="field-heading"><span>Performance</span><b id="performanceOut">65 / 100</b></span><input id="performance" type="range" min="20" max="100" value="65"></label>
         <label class="field"><span class="field-heading"><span>Portability</span><b id="weightOut">1.8 kg max</b></span><input id="weight" type="range" min="0.8" max="3" step="0.1" value="1.8"></label>
         </section>
@@ -29,29 +29,34 @@
           <p class="helper-copy">Your words are translated into editable preference values. Nothing is sent to an external service.</p>
           <div id="interpretSummary" class="interpret-summary" hidden></div>
         </section>
+        <div class="field workload-field"><label>Main tasks <select id="workload"><option value="general">Everyday work & study</option><option value="gaming">Gaming / 3D / graphics</option></select></label></div>
+        <label class="strict-budget"><input id="strictBudget" type="checkbox"> Strict budget (never exceed)</label>
         <div class="field weight-field"><span class="field-heading"><span>What matters most?</span><small>Shared importance</small></span>
           <div class="weight-grid">
-            <label>Price <select name="priceWeight"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option></select></label>
-            <label>Performance <select name="performanceWeight"><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option></select></label>
-            <label>Portability <select name="portabilityWeight"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
+            <label>Price <select name="priceWeight"><option value="0">0 · Ignore</option><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option></select></label>
+            <label>Performance <select name="performanceWeight"><option value="0">0 · Ignore</option><option>1</option><option>2</option><option>3</option><option selected>4</option><option>5</option></select></label>
+            <label>Battery size <select name="batteryWeight"><option value="0">0 · Ignore</option><option selected>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+            <label>Portability <select name="portabilityWeight"><option value="0">0 · Ignore</option><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
           </div>
         </div>
-        <div class="field filters"><label>Operating system<select id="os"><option>Any</option><option>Windows</option><option>macOS</option><option>Linux</option></select></label>
-          <label>Must have<input id="compatibility" placeholder="e.g. USB-C"></label></div>
+        <div class="field filters"><label>Operating system<select id="os"><option>Any</option><option>Windows</option><option>macOS</option><option>Linux</option></select></label></div>
+        <input type="hidden" id="compatibility" value="Any">
         <button class="find-button" type="submit"><span>✦</span> Find recommendations <span class="arrow">→</span></button>
       </form>
       <p id="datasetNotice" class="aside-note" hidden></p>
-      <p class="aside-note">Your must-haves filter the catalog. Fuzzy matching ranks what remains. Missing catalog values are left out of that laptop’s score.</p>
+      <p class="aside-note">Budget is flexible unless you choose Strict. Battery size is only an approximate capacity proxy, not hours of use.</p>
     </aside>
     <section class="results-area">
-      <div class="results-heading"><div><p class="eyebrow">A BETTER FIT, FOUND</p><h2>Recommended laptops</h2><p id="resultCount" class="muted">Adjust your preferences to explore your matches.</p></div>
+      <div class="results-heading"><div><p class="eyebrow">A BETTER FIT, FOUND</p><h2>Recommended laptops</h2><p id="resultCount" class="muted">Adjust your preferences to explore your matches.</p><p class="aside-note">Prices and technical scores are approximate demo estimates.</p></div>
         <label class="sort">Sort by <select id="sort"><option value="match">Best match</option><option value="price">Lowest price</option><option value="weight">Lightest</option></select></label></div>
       <div id="message" class="message" hidden></div>
+      <div id="compareTray" class="compare-tray" hidden aria-live="polite"></div>
       <div id="cards" class="cards"></div>
+      <button id="showMore" class="show-more" type="button" hidden>Show all laptops</button>
     </section>
   </main>
-  <section id="how" class="info panel"><div><p class="eyebrow">THE IDEA</p><h2>How the fuzzy matching works</h2></div><p>Hard requirements such as budget and operating system remove unsuitable options. For the rest, fuzzy sets translate words like “affordable,” “powerful,” and “lightweight” into suitability scores. Your importance choices determine how those scores are combined.</p><a href="#about">About this prototype ↓</a></section>
-  <footer id="about"><span>FUZZY LAPTOP ADVISOR</span><span>Illustrative catalog · Scores explain fit to your preferences, not product quality.</span></footer>
+  <section id="how" class="info panel"><div><p class="eyebrow">THE IDEA</p><h2>How the fuzzy matching works</h2></div><p>Fuzzy sets describe how well each laptop fits your preferred price, performance, weight and battery capacity. Adjust their importance to explore trade-offs. Your budget is flexible by default; choose Strict budget if it must not be exceeded.</p><a href="#about">About this prototype ↓</a></section>
+  <footer id="about"><span>FUZZY LAPTOP ADVISOR</span><span>Demo catalog · Prices and technical scores are estimates · Suitability is not a purchase probability.</span></footer>
   <script src="/app.js"></script>
 </body>
 </html>

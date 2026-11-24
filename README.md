@@ -1,31 +1,64 @@
 # Fuzzy Laptop Advisor
 
-A local website prototype that ranks laptops using fuzzy set membership scores and a weighted average. It first enforces hard requirements (budget, operating system, and an optional compatibility keyword), then scores the remaining laptops against soft preferences. The page shows criterion scores and weighted contributions for each recommendation.
+A small university prototype that helps people choose a laptop without needing to understand every technical specification. Instead of relying on labels like *Student*, *Business*, or *Gaming*, the site compares hardware and lets users describe what matters to them.
 
-## Run
+## Run locally
 
-Requires Python 3.10 or newer. There are no third-party Python dependencies.
+Python 3.10+ is enough; no extra packages are required.
 
 ```bash
-python3 main.py
+python main.py
 ```
 
-Then visit http://127.0.0.1:8000 in your browser. Stop the server with Ctrl+C. To use the old terminal questionnaire, run `python3 main.py --cli`.
+Open **http://127.0.0.1:8000**. Stop the server with `Ctrl+C`.
 
-The catalog is in `laptops.csv`. Required columns are model/name, price, weight in kg, and operating system. The loader accepts common alternatives such as `Model Name`, `Price (Euros)`, `Weight (kg)`, and `OpSys`. When performance is absent, it creates a rough CPU/RAM/GPU spec index; this is labelled as an estimate in the interface. Euro prices are converted to CHF using a fixed ECB reference rate of 0.9143 (6 Nov 2026); update this constant or convert prices yourself when using a different catalog. The bundled catalog is illustrative; performance is a relative project scale, not a standardized benchmark.
+## How it works
 
-The sidebar has two preference input modes: sliders and a local natural-language parser. It maps explicit amounts and everyday phrases to crisp values that users can inspect and adjust. For example, “cheap” maps to a CHF 1,000 budget, “relatively cheap” to CHF 1,400, “fast” to performance 85/100, and “Mac” or “MacBook” to macOS. These are transparent project rules, not learned language understanding; the parser runs locally and sends no request to an NLP provider. Criterion weights and hard filters sit outside the tabs, so they apply to both modes.
+Users can enter preferences using **sliders** or a short **English description**, for example: *“A fairly affordable laptop for gaming, with good performance; weight doesn't matter.”* The site turns recognised phrases into editable settings.
 
-## Fuzzy model
+- **Preferences:** budget, performance, portability, battery size, and their importance (0–5).
+- **Main tasks:** everyday work/study or gaming/3D. These use different CPU/GPU weightings.
+- **Flexible budget:** slightly more expensive laptops can still be considered. **Strict budget** is available when the limit is absolute.
+- **Results:** ranked laptop cards, a short explanation for each match, and side-by-side comparison of two options.
 
-Each soft criterion produces a membership degree in `[0, 1]`. Price is fully suitable at or below 75% of the budget and falls linearly to zero at the budget. Performance uses a linear ramp around the user's desired value. Portability reverses a linear ramp, so lighter laptops receive higher suitability. Weights are normalized and the final score is:
+Each laptop receives a fuzzy suitability value between 0 and 1 for every selected criterion. We combine these values with the user's importance weights:
 
-`score = sum(membership × criterion_weight) / sum(criterion_weights)`
+\[
+S_{base}(L) = \frac{\sum_i w_i\,\mu_i(L)}{\sum_i w_i}
+\]
 
-This is an illustrative model for a course prototype. The membership breakpoints, sample scale, and aggregation rule should be validated with users, as the project brief notes.
+A smooth budget adjustment discourages large price overruns. A small fuzzy rule also accounts for weak graphics when gaming/3D performance matters. The final score measures **preference fit**, not the probability of a good purchase.
 
-## Project structure
+## Project files
 
-- `main.py` — membership functions, hard filtering, ranking, explanation, and local web server
-- `laptops.csv` — editable example catalog
-- `web/` — local website files
+| File | Purpose |
+|---|---|
+| `main.py` | Data loading, preference interpretation, fuzzy scoring, recommendations, and local server |
+| `laptops.csv` | One active demonstration catalog with 56 configurations |
+| `web/index.html` | Website layout |
+| `web/app.js` | Controls, results, explanations, and comparisons |
+| `web/style.css` | Styling and responsive layout |
+| `tests/` | Automated tests |
+| `evaluation/` | Scripts for technical comparisons, ablation, and a small user pilot |
+
+## Testing
+
+From the project folder:
+
+```bash
+python -m unittest discover -s tests -v
+python evaluation/run_evaluation.py
+python evaluation/run_ablation.py
+```
+
+The evaluation scripts generate their own Markdown result files. Our technical tests use constructed scenarios and are separate from testing with real users.
+
+## Data and limitations
+
+The catalog contains **56 example configurations** based on a [cleaned Smartprix laptop dataset](https://github.com/krrishrana962-DATA/Smartprix-Laptop-Dataset---Data-Cleaning). Prices in CHF and CPU/GPU performance indices are **approximate demonstration values**, not current store offers or measured benchmarks. Battery capacity (Wh) is not battery runtime (hours). The membership-function boundaries are prototype settings and still need user feedback.
+
+## Background
+
+- Portmann et al., *Fuzzy Sets and Systems I* (2026), “Approximative Measurements,” pp. 31–35 — fuzzification and fuzzy rules.
+- Portmann et al., *Fuzzy Sets and Systems II* (2026), “Customer Classification,” pp. 60–64 — linguistic variables and combining criteria.
+- vom Brocke, Hevner & Maedche, *Introduction to Design Science Research* (2020), pp. 3–6 — building, demonstrating, and evaluating a prototype.
